@@ -1,0 +1,205 @@
+Today is 01/23/2020
+
+	Agenda:
+		HTTP methods/verbs GET, PUT, POST, DELETE
+		HTTP response and request header
+		query parameters
+		path parameters
+		JSON body verification
+		status code verification
+		Introduction to API testing automation with RestAssured
+
+#################################################################
+
+	now days, our life is full of rules and regulations. Without rules, modern life wouldn't be possible, it would be chaos.
+
+	there are many different regulations. And let's say in the Internet, there are many protocols.
+
+	Protocol - it's set of rules.
+
+	HTTP
+	query: key=value
+
+	scheme://host:port/path?query&key=value&
+
+
+
+	https://www.google.com/search?q=amazon
+
+	name="q" <-- whatever you enter into this input box, that value will be used as query parameter.
+
+	URI (Uniform Resource Identifier) - https://www.google.com/index.html
+	URL (Uniform Resource Locator) - https://www.google.com
+	URN (Uniform Resource Name) - /index.html
+
+	URI = URL + URN
+
+	Let's do some automation! To develop API test automation framework we can use Rest Assured library. We use selenium for UI test automation.  Rest Assured  we gonna use for API automation (only Rest web services)
+
+
+Create a new maven project.
+name: summer-2019-online-rest-assured-testing
+group id: com.automation
+artifact id: default
+
+web service that is based on Rest architecture calls RESTful web service.
+
+
+Rest architecture based on HTTP protocol
+
+static import in java?
+
+- import of static members (methods, variables)
+Add to pom.xml file
+ <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.6.0</version>
+        </dependency>
+    </dependencies>
+
+Make sure you've enabled maven auto-import!
+
+break till 11:10
+
+//kind of controller that takes your request when you are trying to find employee
+@GetMapping(/employees/{id})
+public Employee getEmployeeByID(@PathParam String id){
+	return repo.getEmployee(id);
+}
+
+swagger.io
+
+API Development
+for Everyone
+Simplify API development for users, teams, and enterprises with the Swagger open source and professional toolset. Find out how Swagger can help you.
+
+
+Swagger - it's a tool, looks like web application, that stands for API documentation. Without API documentation, it's
+not really possible to interact with web service (to do api testing, development, etc). API documentation helps to see
+list of all end-points, like: "/user/{id}", "/user/all"
+
+API documentation it's a SDET/Developer's web service manual: what you can do with it, and how to do it. What is
+ allowed (what kind of requests) and what you can get as a response.
+
+Swagger API documentation example:
+
+http://api.cybertektraining.com/swagger-ui.html#/
+
+Documentation is not always in swagger:
+
+it can look like this:
+https://cybertek-reservation-api-docs.herokuapp.com/#add-a-student
+
+or like this
+http://exchangeratesapi.io/
+
+path parameter stands for fetching specific resource, like: some city info, user, etc..
+
+query parameters stands for filtering purpose: out of all users, we need user with last name Bond, or user that have masters degree, etc...
+
+
+package com.automation.tests.day2;
+
+
+import io.restassured.RestAssured;
+import io.restassured.http.Header;
+import io.restassured.response.Response;
+import org.junit.jupiter.api.Test;
+
+import static io.restassured.RestAssured.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class ORDSTests {
+    //address of ORDS web service, that is running no AWS ec2.
+    //dara is coming from SQL Oracle data base to this web service
+    //during back-end testing with SQL developer and JDBC API
+    //we were accessing data base directly
+    //now, we gonna access web service
+
+    //according to OOP conventions, all instance variable should be private
+    //but, if we will make it public, it will not make ant difference for us
+    //it's just good practice, so later we will not hesitate which keyword to use when it's gonna important
+
+    //ec2-34-201-69-55.compute-1.amazonaws.com - my host, you have something else
+    //   /ords/hr or //ords/hr/employees - same for all
+    private String baseURI = "http://ec2-34-201-69-55.compute-1.amazonaws.com:1000/ords/hr";
+
+    //we start from given()
+    //then we can specify type of request like: get(), put(), delete(), post()
+    //and as parameter, we enter resource location (URI)
+    //then we are getting response back. that response we can put into Response object
+    //from response object, we can retrieve: body, header, status code
+    //it works without RestAssured.given() because of static import
+    //verify that status code is 200
+    @Test
+    public void test1() {
+        Response response = given().get(baseURI + "/employees");
+
+//        System.out.println(response.getBody().asString());
+
+        assertEquals(200, response.getStatusCode());
+
+        System.out.println(response.prettyPrint());
+    }
+
+    //#TASK: get employee with id 100 and verify that response returns status code 200
+    //also, print body
+    @Test
+    public void test2() {
+        //header stands for meta data
+        //usually it's used to include cookies
+        //in this example, we are specifying what kind of response type we need
+        //because web service can return let's say json or xml
+        //when we put header info "Accept", "application/json", we are saying that we need only json as response
+        Response response = given().
+                header("accept", "application/json").
+                get(baseURI + "/employees/100");
+        int actualStatusCode = response.getStatusCode();
+        System.out.println(response.prettyPrint());
+        assertEquals(200, actualStatusCode);
+
+        //get information about response content type, you can retrieve from response object
+        System.out.println("What kind of content server sends to you, in this response: "+response.getHeader("Content-Type"));
+    }
+
+//    #Task: perform GET request to /regions, print body and all headers.
+    @Test
+    public void test3(){
+        Response response = given().get(baseURI+"/regions");
+        assertEquals(200, response.getStatusCode());
+        //to get specific header
+        Header header = response.getHeaders().get("Content-Type");
+        //print all headers one by one
+        for(Header h: response.getHeaders()){
+            System.out.println(h);
+        }
+        System.out.println("##########################");
+        System.out.println(response.prettyPrint());
+    }
+}
+
+
+################################
+
+To do test automation of RESTful web services (those that use rest api), we can use RestAssured library in java. It simplifies testing of REST services. So we can do PUT, GET, POST, DELETE.... requests.
+
+

@@ -1,0 +1,428 @@
+Today is 01/27/2020
+
+	Agenda:
+		JsonPath validations with single values, objects, nested objects
+
+		items[0].employee_id
+
+
+		 "items": [
+        {
+            "employee_id": 100,
+            "first_name": "Holy",
+            "last_name": "King",
+            "email": "SKING",
+            "phone_number": "515.123.4567",
+            "hire_date": "2003-06-17T04:00:00Z",
+            "job_id": "AD_PRES",
+            "salary": 24000,
+            "commission_pct": null,
+            "manager_id": null,
+            "department_id": 90,
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "http://ec2-34-201-69-55.compute-1.amazonaws.com:1000/ords/hr/employees/100"
+                }
+
+            ]
+        },
+
+
+        to get href;
+
+        items[0].links.href - and you will get:http://ec2-34-201-69-55.compute-1.amazonaws.com:1000/ords/hr/employees/100
+
+whenever you have multiple objects in payload (json body), to get specific one, you need to use index [index]. and then
+ just put .property_name. If that property is also another object, put .property_name again. I there are multiple objects, just use index.
+
+/**
+ * Warmup!
+ *          Given accept type is JSON
+ *         When users sends a GET request to "/employees"
+ *         Then status code is 200
+ *         And Content type is application/json
+ *         And response time is less than 3 seconds
+ */
+
+Warmup!
+/*
+    Given accept type is JSON
+    And parameters: q = country_id = US
+    When users sends a GET request to "/countries"
+    Then status code is 200
+    And Content type is application/json
+    And country_name from payload is "United States of America"
+    {"country_id":"US"}
+ */
+
+Never ever try to make test pass. If you put all required information as a expected result, but actual results is different,
+ never try to make it work. It can be a bug, and you may miss it, because you don't like red color in console.
+ It's a perfect time to retest and talk to developer about issue that you've discovered.
+
+ accept(ContentType.JSON) <- request JSON
+
+ assertThat().contentType(ContentType.JSON). <- verify that web service returned JSON
+
+Countries[] items = new Countries[1];
+items[0]  -->	{
+		            "country_id": "US",
+		            "country_name": "United States of America",
+		            "region_id": 2,
+		            "links": [
+		                {
+		                    "rel": "self",
+		                    "href": "http://ec2-34-201-69-55.compute-1.amazonaws.com:1000/ords/hr/countries/US"
+		                }
+		            ]
+       			 }
+
+
+items[0].country_name = United States of America
+
+
+String[] names = {"John", "Martin", "Stan"}
+
+items.links.href <- get href property from every country
+items[0].links.href <- get href property from 1st country
+
+List<?> links = jsonPath.getList("items.links.href");
+items - JSON object
+links - JSON object inside items
+href - property in links object
+
+ "items": [
+        {
+            "country_id": "US",
+            "country_name": "United States of America",
+            "region_id": 2,
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "http://ec2-34-201-69-55.compute-1.amazonaws.com:1000/ords/hr/countries/US"
+                }
+            ]
+        }
+    ],
+
+items[-1] - we will get the last one
+
+ORDS has limited number of objects in response. Whenever you are asking for all employees or all countries, it gives you 25 only.
+
+
+q={"department_id":"90"}
+
+usually 'q' query parameter used for search. when you specify q as query parameter, you want to filter search results.
+Instead of getting all values, you can get values with specific properties only: department_id=90, and syntax is like this:
+
+q={"department_id":"90"}
+
+###########
+Verify that ORDS returns only 25 countries.
+
+	Given accept content type as JSON
+	When user makes GET request to "/countries"
+	Then user verifies that payload contains only 25 countries
+
+
+* get values as list and assert it size.
+
+
+
+q={"first_name":"Holy"} <- filter search results
+
+where first_name = 'Holy' is SQL
+
+            "first_name": "Holy",
+
+/**
+ * given path parameter is "/employees"
+ * when user makes get request
+ * then assert that status code is 200
+ * and verify that body returns following salary information after sorting from higher to lower
+ *  24000, 17000, 17000, 12008, 11000,
+ *  9000, 9000, 8200, 8200, 8000,
+ *  7900, 7800, 7700, 6900, 6500,
+ *  6000, 5800, 4800, 4800, 4200,
+ *  3100, 2900, 2800, 2600, 2500
+ *
+ */
+
+
+List<Integer> expectedSalaries = List.of(  24000, 17000, 17000, 12008, 11000,
+                                            9000, 9000, 8200, 8200, 8000,
+                                            7900, 7800, 7700, 6900, 6500,
+                                            6000, 5800, 4800, 4800, 4200,
+                                            3100, 2900, 2800, 2600, 2500);
+
+key1 = value1
+key2 = value1,value2,value3,value4
+
+
+/** ####TASK#####
+ *  Given accept type as JSON
+ *  And path parameter is id with value 2900
+ *  When user sends get request to /locations/{id}
+ *  Then user verifies that status code is 200
+ *  And user verifies following json path contains following entries:
+ *      |street_address         |city  |postal_code|country_id|state_province|
+ *      |20 Rue des Corps-Saints|Geneva|1730       |CH        |Geneve        |
+ *
+ */
+
+
+Entry: key=value
+
+Map, it's a collection of entries.
+
+Map - it's a data structure, where every value is referenced by key.
+
+JsonPath represents JSON body.
+
+How to verify if JSON body contains entry?
+
+key=street_address, value=20 Rue des Corps-Saints
+
+hasEntry(key, value) <-returns true if JSON body has following key=value pair
+
+
+Map<String, String> locations = new HashMap<>();
+
+String address = locations.get("street_address") <- how we read data from map, by entering key, we can get value:
+
+ 	/**
+     *     "location_id": 2900,
+     *     "street_address": "20 Rue des Corps-Saints",
+     *     "postal_code": "1730",
+     *     "city": "Geneva",
+     *     "state_province": "Geneve",
+     *     "country_id": "CH",
+     */
+
+The value of address variable is: 20 Rue des Corps-Saints. Keys always from the left, values always from the right. We can represent this JSON as Map.
+package com.automation.tests.day4;
+
+import com.automation.utilities.ConfigurationReader;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import org.junit.jupiter.api.BeforeAll;
+import io.restassured.http.Header;
+import io.restassured.response.Response;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import static io.restassured.RestAssured.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.*;
+
+public class MetaWeatherJsonPathTests {
+
+    //TILL 4:10 with break time
+    @BeforeAll
+    public static void setup() {
+        baseURI = ConfigurationReader.getProperty("meta.weather.uri");
+    }
+
+    /**
+     * TASK
+     * Given accept type is JSON
+     * When users sends a GET request to "/search"
+     * And query parameter is 'New'
+     * Then user verifies that payload contains 5 objects
+     */
+
+    @Test
+    @DisplayName("Verify that are 5 cities that are matching 'New'")
+    public void test1() {
+        given().
+                accept(ContentType.JSON).
+                queryParam("query", "New").
+                when().
+                get("/search").
+                then().
+                assertThat().
+                statusCode(200).
+                body("", hasSize(5)).
+                log().body(true);
+
+    }
+
+
+    /**
+     * TASK
+     * Given accept type is JSON
+     * When users sends a GET request to "/search"
+     * And query parameter is New
+     * Then user verifies that 1st object has following info:
+     * |title   |location_type|woeid  |latt_long          |
+     * |New York|City         |2459115|40.71455,-74.007118|
+     */
+    @Test
+    @DisplayName("Verifies that 1st city has following info:New York, City, 2459115, 40.71455,-74.007118")
+    public void test2() {
+            given().
+                    accept(ContentType.JSON).
+                    queryParam("query", "New").
+            when().
+                    get("/search").
+            then().
+                    assertThat().
+                        statusCode(200).
+                        body("title[0]", is("New York")).
+                        body("location_type[0]", is("City")).
+                        body("woeid[0]", is(2459115)).
+                        body("latt_long[0]", is("40.71455,-74.007118")).
+                        log().body(true);
+    }
+
+    @Test
+    @DisplayName("Verifies that 1st city has following info:New York, City, 2459115, 40.71455,-74.007118")
+    public void test2_2() {
+        Map<String,String> expected = new HashMap<>();
+        expected.put("title", "New York");
+        expected.put("location_type", "City");
+        expected.put("woeid", "2459115");
+        expected.put("latt_long", "40.71455,-74.007118");
+
+        Response response = given().
+                                accept(ContentType.JSON).
+                                queryParam("query", "New").
+                            when().
+                                get("/search");
+        JsonPath jsonPath = response.jsonPath();
+        //String.class, String.class will force jsonpath to return map with String as key and value
+        assertEquals(expected, jsonPath.getMap("[0]", String.class, String.class));
+        //for first title, title[0], but for first object, we can say just [0]
+        //if one object is a key=value pair like map, collection of this objects can be represented as list of map
+        List<Map<String, ?>> values = jsonPath.get();
+       for(Map<String, ?> value: values){
+           System.out.println(value);
+       }
+    }
+
+    /* * TASK
+            * Given accept type is JSON
+            * When users sends a GET request to "/search"
+            * And query parameter is 'Las'
+            * Then user verifies that payload  contains following titles:
+            * |Glasgow  |
+            * |  Dallas |
+            * |Las Vegas|*/
+    @Test
+    public void test3(){
+        given().
+            accept(ContentType.JSON).
+            queryParam("query", "Las").
+        when().
+            get("/search").
+        then().assertThat().body("title", hasItems("Glasgow", "Dallas", "Las Vegas"));
+        //hasItems - exact match
+        //containsItems - partial match
+    }
+
+
+}
+/**
+ * <p>
+ * TASK
+ * Given accept type is JSON
+ * When users sends a GET request to "/search"
+ * And query parameter is 'Las'
+ * Then user verifies that payload  contains following titles:
+ * |Glasgow  |
+ * |Dallas   |
+ * |Las Vegas|
+ * <p>
+ * <p>
+ * TASK
+ * Given accept type is JSON
+ * When users sends a GET request to "/search"
+ * And query parameter is 'Las'
+ * Then verify that every item in payload has location_type City
+ * <p>
+ * <p>
+ * TASK
+ * Given accept type is JSON
+ * When users sends a GET request to "/location"
+ * And path parameter is '44418'
+ * Then verify following that payload contains weather forecast sources
+ * |BBC                 |
+ * |Forecast.io         |
+ * |HAMweather          |
+ * |Met Office          |
+ * |OpenWeatherMap      |
+ * |Weather Underground |
+ * |World Weather Online|
+ * <p>
+ * TASK
+ * Given accept type is JSON
+ * When users sends a GET request to "/search"
+ * And query parameter is 'Las'
+ * Then user verifies that payload  contains following titles:
+ * |Glasgow  |
+ * |Dallas   |
+ * |Las Vegas|
+ * <p>
+ * <p>
+ * TASK
+ * Given accept type is JSON
+ * When users sends a GET request to "/search"
+ * And query parameter is 'Las'
+ * Then verify that every item in payload has location_type City
+ * <p>
+ * <p>
+ * TASK
+ * Given accept type is JSON
+ * When users sends a GET request to "/location"
+ * And path parameter is '44418'
+ * Then verify following that payload contains weather forecast sources
+ * |BBC                 |
+ * |Forecast.io         |
+ * |HAMweather          |
+ * |Met Office          |
+ * |OpenWeatherMap      |
+ * |Weather Underground |
+ * |World Weather Online|
+ */
+/**
+ *TASK
+ * Given accept type is JSON
+ * When users sends a GET request to "/search"
+ * And query parameter is 'Las'
+ * Then user verifies that payload  contains following titles:
+ *  |Glasgow  |
+ *  |Dallas   |
+ *  |Las Vegas|
+ *
+ */
+/**
+ *TASK
+ * Given accept type is JSON
+ * When users sends a GET request to "/search"
+ * And query parameter is 'Las'
+ * Then verify that every item in payload has location_type City
+ *
+ */
+/**
+ *TASK
+ * Given accept type is JSON
+ * When users sends a GET request to "/location"
+ * And path parameter is '44418'
+ * Then verify following that payload contains weather forecast sources
+ * |BBC                 |
+ * |Forecast.io         |
+ * |HAMweather          |
+ * |Met Office          |
+ * |OpenWeatherMap      |
+ * |Weather Underground |
+ * |World Weather Online|
+ *
+ *
+ */

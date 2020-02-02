@@ -1,0 +1,148 @@
+Today is 01/24/2020
+
+	1st part review (with assertThat(), hamcrest library)
+
+
+	2nd part:
+			Json Path: how to retrieve values from json file (as single variable or collection), and how to search in json response.
+
+
+############################
+
+	let's import swagger collection of ORDS to postman
+
+	import this: https://www.getpostman.com/collections/202f1655167201fe8efe - this is a postman collection of api requests. Here you can see what kind of request you may perform.
+
+
+	{{baseUrl}} - it's a variable. and it can be changed in settings.
+
+* optional (if you don't want to destroy mine:[)
+
+	go to collection -> edit -> variables -> set url of your EC2 (where you have SQL Oracle DB and ORDS web service)
+	instance. You can leave it default, in case you don't have your own ec2 with ORDS.
+
+	ORDS swagger doc: https://app.swaggerhub.com/apis-docs/vfom/ords-generated_api/1.0.0#/
+
+####################################################
+
+Start building the request part of the test io.restassured.specification. E.g.
+     * <p/>
+     * <pre>
+     * given().parameters("firstName", "John", "lastName", "Doe").when().post("/greetXML").then().body("greeting.firstName", equalTo("John"));
+     * </pre>
+     * <p/>
+     * will send a POST request to "/greetXML" with request parameters <tt>firstName=John</tt> and <tt>lastName=Doe</tt> and
+     * expect that the response body containing JSON or XML firstName equal to John.
+     * <p/>
+     * The only difference between {@link #with()} and {@link #given()} is syntactical.
+     *
+     * @return A request specification.
+     */
+
+	 given().
+			.parameters("firstName", "John", "lastName")
+     when().
+             get("/x").
+     then().
+             body("x.y.z1", equalTo("Z1")).
+             body("x.y.z2", equalTo("Z2"));
+
+
+ /**
+   * A shortcut to the frequently used is(equalTo(x))
+   * For example:
+   * <pre>assertThat(cheese, is(smelly))</pre>
+   * instead of:
+   * <pre>assertThat(cheese, is(equalTo(smelly)))</pre>
+   */
+
+  /**
+     * given path parameter is "/regions/{id}"
+     * when user makes get request
+     * and region id is equals to 1
+     * then assert that status code is 200
+     * and assert that region name is Europe
+     */
+
+    @Test
+    public void test3(){
+        given().
+                accept("application/json").
+                pathParam("id", 1).
+        when().
+                get("/regions/{id}").
+        then().
+                assertThat().statusCode(200).
+                assertThat().body("region_name", is("Europe")).
+                time(lessThan(1L), TimeUnit.SECONDS);
+    }
+
+
+     time(lessThan(1L), TimeUnit.SECONDS); - to assert that response time was less that 1 second.
+
+     /**
+     * Validate that the response time matches the supplied <code>matcher</code> and time unit. For example:
+
+      when().
+           get("/something").
+      then().
+           time(lessThan(2), TimeUnit.SECONDS);
+
+
+then() - returns a validatable response that's lets you validate the response. Usage
+
+     * given().
+     *         param("firstName", "John").
+     *         param("lastName", "Doe").
+     * when().
+     *         get("/greet").
+     * then().
+     *         body("greeting", equalTo("John Doe"));
+     * </pre>
+     *
+     * @return A validatable response
+     */
+    T then();
+
+[] in javascript indicate object
+
+var user = [
+			"first name": "james",
+			"last name": "bond"
+			"age": "50"]
+
+JSON - javascript object notation
+
+JsonPath is an alternative to using XPath for easily getting values from a Object document. It follows the
+
+	Break till 3:18
+
+
+  /** ####TASK#####
+     *  Given accept type as JSON
+     *  And path parameter is id with value 1700
+     *  When user sends get request to /locations
+     *  Then user verifies that status code is 200
+     *  And user verifies following json path information:
+     *      |location_id|postal_code|city   |state_province|
+     *      |1700       |98199      |Seattle|Washington    |
+     *
+     */
+
+    @Test
+    public void test8(){
+        Response response = given().
+                                accept(ContentType.JSON).
+                                pathParam("id", 1700).
+                            when().
+                                get("/locations/{id}");
+
+        response.
+                then().
+                    assertThat().body("location_id", is(1700)).
+                    assertThat().body("postal_code", is("98199")).
+                    assertThat().body("city", is("Seattle")).
+                    assertThat().body("state_province", is("Washington")).
+                    log().body();
+
+    }
