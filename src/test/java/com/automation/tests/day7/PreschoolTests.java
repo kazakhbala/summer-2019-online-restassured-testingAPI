@@ -34,7 +34,7 @@ import static org.hamcrest.Matchers.*;
 public class PreschoolTests {
     @BeforeAll
     public static void setup(){
-        baseURI = ConfigurationReader.getProperty("school.uri");
+        baseURI = ConfigurationReader.getProperty("calendarific.uri");
     }
     @Test
     @DisplayName("Get student with id 2633 and convert payload into POJO")
