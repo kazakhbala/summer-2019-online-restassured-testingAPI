@@ -1,0 +1,167 @@
+Today is 02/03/2020
+
+	Agenda:
+		Authentication
+		Authorization
+		Authentication types:
+				Basic
+				API key
+				Bearer
+				Oauth
+				Oauth 2.0
+		HTTPS
+		How to ignore certificate issues in RestAssured
+		JSON Schema validation
+
+###########################################################
+
+	429 Status code - means Too many requests. This is what happens, when you are practicing API testing with
+	open source APIs
+
+	For you, it means - ban. Why? Because owners of this web site/web service are trying prevent DDoS attack.
+
+denial-of-service attack is a cyber-attack in which the perpetrator seeks to make a machine or network
+resource unavailable to its intended users by temporarily or indefinitely disrupting services of a host connected
+to the Internet
+
+If too many requests would go to some web site, web site might crash. How web service/web site knows that it's you?
+Based on IP address. You can hide your IP address by using proxy services or VPN, but still any normal web site
+will detect attempt to crash it, and block malicious client.
+
+don't do performance testing with real web sites.
+
+What does it mean authentication?
+
+- I am me.
+
+or
+
+Who am I?
+
+I am this person, please let me in.
+
+HTTPS Hyper Text Transport Protocol Secured
+
+all data that is transferring over HTTPS is encrypted.
+
+Even though some hacker, would try to intercept data or steal it somehow, he wouldn't be able to understand it,
+because encryption makes any data meaningless, without a key. Only with a key, you can decrypt information
+transfer over HTTP.
+
+When you are requesting any website, over HTTP, website sends you SSL certificate, that was granted by authorized
+organizations. Then browser checks if certificate is valid, and checks organization name. Because, certificate
+can be granted by anyone. If browser doesn't know who is this authority, verification will fail.
+
+Any browser will warn you if web site is using HTTP. The problem about HTTP is data transfers as plain text.
+You don't want to enter passwords, SSN, card numbers, etc... if you don't see HTTPS at the beginning of website name.  Even RestAssured will prevent you from using non HTTPS services.
+
+Client - who is asking for data from the web service/web site. Postman, RestAssured, Browser (chrome, safari, IE,
+edge, firefox,etc...), CURL, SoapUI, etc....
+
+What's curl used for?
+
+curl is used in command lines or scripts to transfer data. It is also used in cars, television sets, routers,
+printers, audio equipment, mobile phones, tablets, settop boxes, media players and is the internet transfer
+backbone for thousands of software applications affecting billions of humans daily.
+
+Basic authentication - it's a simplest authentication type built in into the HTTP protocol.
+
+How does it work?
+
+Client sends HTTP request with Authorization header that contains word Basic followed by space and base64
+encoded username:password
+
+base64 not for security at all, it just helps to prevent data corruption. Basic authentication shouldn't be
+used without HTTPS, because user name and password is not encrypted. It's very easy to hack it.
+
+VGhhbmtzIFZhc3lsISBWZXJ5IFdvbmRlcmZ1bCBUbyBLbm93IQ==
+
+https://www.base64decode.org/ - you can use this website to decode base64 encoded string.
+
+ given().auth().basic("admin", "admin"). <- for basic authentication
+
+ given().auth() <- to specify  authentication
+
+SSL (Secure Sockets Layer) and its successor, TLS (Transport Layer Security), are protocols for establishing
+authenticated and encrypted links between networked computers.
+
+1) used in selenium: http://username:password@practice.cybertekschool.com/basic_auth <- how you can perform
+basic authenticated, as part of URL. because it's not an alert, not HTML page, so nothing from selenium would work.
+
+Access using credentials in the URL
+Many clients also let you avoid the login prompt by using an encoded URL containing the username and the password
+ like this:
+https://username:password@www.example.com/
+
+The use of these URLs is deprecated. In Chrome, the username:password@ part in URLs is even stripped out for
+security reasons. In Firefox, it is checked if the site actually requires authentication and if not, Firefox
+will warn the user with a prompt "You are about to log in to the site “www.example.com” with the username “username”,
+but the website does not require authentication. This may be an attempt to trick you."
+
+Instead of this, username and password should be provided in header:
+
+Authorization : Basic YWRtaW46YWRtaW4=
+
+Authorization - header parameter name
+
+Basic (base64 encoded username and password)
+
+2) given().auth() .basic("admin","admin") <-  basic authenticated in rest assured
+
+3) given().relaxedHTTPSValidation() <- ignore SSL issues
+
+
+In selenium, we used to enter user name and password like this (for basic authentication): http://admin:admin@practice.cybertekschool.com/basic_auth
+
+
+Bearer authentication (token authentication) - use bearer token, it's a cryptic string generated by server.
+Client has to attach token to the header like this:
+
+Authorization: Bearer <token>
+
+Bearer authentication scheme was created as part of OAuth 2.0 authentication, but it's used by itself as well.
+
+
+Step 1. Sign in, https://cybertek-reservation-api-qa.herokuapp.com/sign?email=vasyl@cybertekschool.com&password=cybertek2020
+
+Step 2. Get access token and add it to the header. Every single request has to be followed by access token.
+In postman, go to authorization, and select Bearer. Provide token as value. Then postman, will automatically
+add to the header:
+
+key = Authorization  value = Bearer eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Mzc2IiwiYXVkIjoic3R1ZGVudC10ZWFtLWxlYWRlciJ9.DoFI744aMLxUaf0GcjVOEDkJ3Wh7RlKDx-TYp8_sJpU
+
+How to use it in RestAssured?
+
+public class BearerTokenTestsWithBookit {
+
+    @BeforeAll
+    public static void setup() {
+        baseURI = ConfigurationReader.getProperty("bookit.qa1");
+    }
+
+    //Let's get list of all rooms and verify that status code is 200
+    // /api/rooms
+    @Test
+    @DisplayName("Get list of rooms")
+    public void test1(){
+        Response response = given().
+                                header("Authorization", getToken()).
+                            when().
+                                get("/api/rooms").prettyPeek();
+    }
+
+    /**
+     * Method that generates access token
+     * @return bearer token
+     */
+    public String getToken(){
+        //https://cybertek-reservation-api-qa.herokuapp.com/sign?email=vasyl@cybertekschool.com&password=cybertek2020
+        Response response = given().
+                                queryParam("email", ConfigurationReader.getProperty("team.leader.email")).
+                                queryParam("password", ConfigurationReader.getProperty("team.leader.password")).
+                            when().
+                                get("/sign").prettyPeek();
+        return  response.jsonPath().getString("accessToken");
+    }
+
+}

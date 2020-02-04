@@ -26,6 +26,8 @@ public class BasicAuthenticationTests {
 
     @BeforeAll
     public static void setup() {
+        //https will not work, because of SSL certificate issues
+        //this website doesn't have it
         baseURI = "http://practice.cybertekschool.com";
     }
 
@@ -33,10 +35,9 @@ public class BasicAuthenticationTests {
     @DisplayName("basic authentication test")
     public void test1(){
         given().
-                auth().basic("admin","admin").
-          when().
-                get("basic_auth").prettyPeek().
-           then().assertThat().statusCode(200);
-
+                auth().basic("admin", "admin").
+                when().
+                get("/basic_auth").prettyPeek().
+                then().assertThat().statusCode(200);
     }
 }
