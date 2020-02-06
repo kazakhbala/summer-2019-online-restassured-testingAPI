@@ -1,4 +1,4 @@
-package com.automation.tests.MyPractice;
+package com.automation.tests.homework;
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;

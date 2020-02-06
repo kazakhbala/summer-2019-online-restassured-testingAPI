@@ -1,0 +1,147 @@
+/**
+ *  ####### WARM-UP TASK ########
+ * Given accept content type as JSON
+ * And query parameter api_key with valid API key
+ * When user sends GET request to "/countries"
+ * Then user verifies that total number of holidays in United Kingdom is equals to 95
+ *
+ * website: https://calendarific.com/
+ *
+ *
+ *
+ */
+
+JSON
+WEB
+TOKEN
+
+ JWT Token: eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Mzc2IiwiYXVkIjoic3R1ZGVudC10ZWFtLWxlYWRlciJ9.DoFI744aMLxUaf0GcjVOEDkJ3Wh7RlKDx-TYp8_sJpU
+
+ This ling weired string calls JWT Token. What it stand for? As you remember, there is something that call authentication. Basically, you have to tell to the server who you are. Once you sent credentials, server will send you a token. This token, like secret password, that you have to carry with every request.
+
+
+ So there are different ways of authentication:
+
+ 	Basic: username:password, it comes with HTTP by default. Not secured, especially, if you provide credentials as part of URL:
+
+ 	http://admin:admin@somewebsite.com
+
+ 	It's not secured, it's better to pass credentials in header and use it only with HTTPS not HTTP.
+
+ 	HTTP contains only plain text. Data is not encrypted.If data is not encrypted, it's very easy to hack passwords, credit card info, etc....
+
+
+ 	How basic authentication works?
+
+
+ 	1. client makes call to the server without credentials
+ 	2. Server responds with 401 unauthorized status code
+ 	3. client sends request with credentials
+
+ 	Why it's like this? and why we haven't seen 401 in the response?
+
+ 	It's done due to security, to ensure that credentials will go only to one server.
+
+ 	But, it loads network more, since there are 2 requests actually happens.
+
+
+ 	if you want to skip first 2 steps, you can do something like preemptive authentication.
+
+
+
+ 	how to do that in rest assured?
+
+  	given().
+                auth().preemptive().basic("admin", "admin").
+                when().
+                get("/basic_auth").prettyPeek().
+                then().assertThat().statusCode(200);
+
+API key:
+		API key looks like long string with bunch of letters and digits. API key usually used by developers, to get the key you need to register on the web site, so owner of web service would know who you are. Then we have too add API key to every request.
+
+ queryParam("api_key","ebe88078e981c84bedeb9e8a34ad927560e545f2").
+
+
+usually, API key is provided as query parameter.
+
+
+But, now days, the most popular authentication type/ authorization protocol is OAuth 2.0.
+
+It's used by Facebook, Google, twitter, and many more companies. If you ever tried to sign up on some website with google account, it's possible because of  OAuth 2.0. authentication.
+
+OAuth 2.0. - provides access via tokens. You give username and password, server generates token, and than with every request you have to carry token.
+
+
+There are 2 very popular authorization protocols: OAuth and OAuth 2.0.
+
+Difference is huge, especially for developers. OAuth is very difficult to implement for developers, that's why many companies moved from OAuth 1.0 to OAuth 2.0. Second generation is less secured, but easier to implement and use. Because, it's based on Bearer token.
+
+OAuth 2.0. allows authentication via 3rd party services, without sharing your password.
+
+
+For example: if you want to sign up on etsy.com with google account, you have to enter username and password from gmail, then google will give you token, that will be used to access etsy.com.
+
+etsy - will never know your password.
+
+
+
+Also, there are 1 factor, 2 factor and multi factor authentications:
+
+For example okta: it's a 2 factor service. You have to provide credentials, plus confirm push notification on your phone.
+
+
+
+authentication - who you are: give me your credentials, and I will let you get in.
+
+authorization - what you can do, what's your role, what kind of permissions you have: regular user, admin, superuser, etc..: once you logged in, based on credentials, system will know what you can do.
+
+Let's say regular user can only see information, but cannot delete it or edit.
+Admin, can do anything: add, edit, delete...
+
+
+For example bookit:
+
+	regular user cannot book rooms
+	team leader - can book rooms, but cannot delete students
+	teacher - can do anything
+	admin - can do anything too
+
+
+Toke consists of 3 parts: eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIyMDY0IiwiYXVkIjoidGVhY2hlciJ9.japWZkmQ3ExAJA6HxXEMSm92h5ZfYARx1Ci8sSiLgzM
+
+header.payload.secret
+
+
+token is encoded with SHA 256 algorithm
+
+    {
+        "id": 0,
+        "name": null,
+        "description": null,
+        "capacity": 0,
+        "withTV": false,
+        "withWhiteBoard": false
+    },
+
+How to exclude id from serialized object?
+
+How to exclude certain properties from serialized object?
+
+
+transient - java keyword that prevents property serialization.
+
+Id doesn't impact on deserialization.
+
+#interview question:
+
+	Where do you store your test data?
+
+	-answer: since I use cucumber BDD, most of my test data is stored in feature files, as cucumber data tables or example tables. Also, I use excel files, so I keep them under resources --> test data folder.
+
+#interview question:
+
+	Who gives you a test data?
+
+	-answer: It depends, I can get it from manual testers, from developers or I create it by myself. There are bunch of resources where you can generates dummy data.
+
